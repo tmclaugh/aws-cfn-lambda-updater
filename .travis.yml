@@ -1,0 +1,23 @@
+language: python
+python:
+- '3.6'
+install: pip install -r requirements.txt -t .
+script:
+- true
+after_success:
+- mkdir dist
+- find ./ -name '*.pyc' -delete
+- zip -r dist/aws-cfn-lambda-updater.zip . -x '.git/*' -x 'dist/*'
+- ls -al dist
+deploy:
+  skip_cleanup: true
+  provider: s3
+  access_key_id:
+    secure: "rpEw9dHKGG1WI+Db06BzutkMDpAuFgi+T+D2M0E66YV7546d4WgzTc//yqwPfub+AXhTVzX4V021bQJQp37U6O/RhzXVEn/+nqpJAe6Mlyb+yRv8MAtLU1vCSrVUv6VWLgHCjF2K1JSisheb+qqRAU+jiBsuMC2iSw7Jy04tE/5hK70z2c4s0wlZHfbJz7K3654IhNYM4WBlRYcnJcP8vyQ0C5NsUbbRs4mjem7uNyQvWZFVd0IFFnb9XGhoWrBHys3y4cVxyrNljGl5zW3spBaJxCxG8hzh1FqogPXqzmVYJrr3u17+BBaUAuQu39rGIhVUu2Tax1mEqQjaCRUVmNJWXrUW9IOTJ5n9c0GlNm/+i2bcHujoKisw5hetsq3HVpayyPNHBfvr8xO4OFzkFhie4r5pIDzfhR02txB0mewj3e5XaDBl8jnfIxsD7GULbIERrljYjM0ZPd1S/qw7FYrx3n24MXV0eEBL6aUbtCsYjWpypp9TUp0CAyCLg8NlGNg7UxKaRat1UOPdvHZ2TQ+Sxw41TPXEheL5oe9pLaTYbFlgev3iWMEYkq1frkkrGQM1/ahx6FuJ/ipuX0Z90u8hDTXJnZI/nwymNTKyVlYazimbcqrM1m5Pa7iXAj020txfZ5Zfp6SI7nHEKUOyr2fj3FSWg222eQ3DavIQTas="
+  secret_access_key:
+    secure: "mJGZ2mCgKpWmsaIsaQwGLeAdxyBe+PWs+Jt0OjN15WtjTU15IUpjWUox02AjLHz6w7RcVMZESDqpHeYXJtl4AUjXPhlhKtypXfVQIPOcuZGnA41oNOsofJ/8+qor/DisvEWCb5zQ3YLUwtMtWcRBrgPGb9wjREVB9Sg0Yl5N2SSegGivmwu2qxw7JVKSfuMBoi3TWfWoTagyP8OOfSWJzRSXAK0X1D5KV7PjkqQcLBcLUn8q3dM+F1/EyTA/NyRhdk5WOytTs36F73k+tbGkYnCFAOWqlXMCzSREUxgjKUPCB2cE00i12G/QAOCqmqNiev6IwAtQ3i/aSVCgKMR+fnWVFK+8ml9EtIm1k23qUuEulxIHoznN+EF6lXUrPGEb7bBOnehq62Vlc4Uig++hb1DxtlfucdsTQ19NnrIwCyq84T1HcsNs+e/JZuhKxCY240HrWoAj8REwZMvMl/+ZCwfeliHawZwLclzVOPslhUv36KpptPO4ubeJCwqgQzNhtuWIOP4Z36LPKojvtYJr999ur8fRpJEBk7I+6oRS0w/PpWmACQdJKpcqufwnC8UHDgjx2ctjBivYi7WUHPq9ioYT03lK5t8Ur4yOFiUeQq1ezvmzqK1nxbl1OiAiv1s25tjiGtxYvrMRgWRE+oShv4mNFtSzPiQausVOLSpssn0="
+  bucket: straycat-dhs-org-straycat-lambda-deploys
+  local-dir: dist
+  acl: public_read
+  on:
+    repo: tmclaugh/aws-cfn-lambda-updater
