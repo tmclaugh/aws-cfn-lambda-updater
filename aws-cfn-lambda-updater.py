@@ -1,5 +1,6 @@
 #!env python
 import boto3
+import cfn_resource
 import io
 import json
 import logging
@@ -20,6 +21,8 @@ if os.environ.get('TS_DEBUG'):
     logging.root.setLevel(level=logging.DEBUG)
 _logger = logging.getLogger(__name__)
 
+handler = cfn_resource.Resource()
+
 def _fetch_zip_file(url):
     '''
     Fetch a file from a URL and return a file-like object.
@@ -36,16 +39,20 @@ def _fetch_zip_file(url):
 
     return zip_file
 
-def handler(event, context):
+@handler.update
+def update_lambda(event, context):
     '''
     Update a lambda function.
     '''
-    _logger.info('Event received: {}'.format(json.dumps(event)))
+    _logger.info('CloudFormation event received: {}'.format(json.dumps(event)))
 
-    function_name = event.get('FunctionName')
-    function_zip_file_url = event.get('FunctionZipFileUrl')
-    function_s3_bucket = event.get('FunctionS3Bucket')
-    function_s3_key = event.get('FunctionS3Key')
+    # get Properties keys sent from CFN.
+    # ref: http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-requests.html
+    properties = event.get('ResourceProperties')
+    function_name = properties.get('FunctionName')
+    function_zip_file_url = properties.get('FunctionZipFileUrl')
+    function_s3_bucket = properties.get('FunctionS3Bucket')
+    function_s3_key = properties.get('FunctionS3Key')
 
     # S3{Bucket,Key} require S3 permissions/IAM policy for access. If using a
     # URL then we must fetch and get bytes.
@@ -71,7 +78,16 @@ def handler(event, context):
     lambda_client = boto3.client('lambda')
     lambda_update_resp = lambda_client.update_function_code(**lambda_update_kwargs)
 
-    _logger.debug('lambda_update_resp: {}'.format(json.dumps(lambda_update_resp)))
+    # Construct our CFN response. cfn_resource will handle setting RequestId.
+    # ref: http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-responses.html
+    cfn_resp = {
+        'Data': lambda_update_resp,
+    }
 
-    return lambda_update_resp
+    # cfn_resource will log the response so this is here only to aide if we
+    # suspect issues communicating back to CFN successfully.
+    _logger.debug('cfn_resp: {}'.format(json.dumps(cfn_resp)))
+
+    # cfn_resource will signal CFN with this.
+    return cfn_resp
 
