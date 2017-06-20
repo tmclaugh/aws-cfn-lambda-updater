@@ -119,6 +119,17 @@
       "DependsOn": [
         "LambdaFunction"
       ]
+    },
+    "LambdaVersion": {
+      "Type": "AWS::Lambda::Version",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "LambdaFunction"
+        }
+      },
+      "DependsOn": [
+        "LambdaInvokeUpdater"
+      ]
     }
   },
   "Parameters": {
