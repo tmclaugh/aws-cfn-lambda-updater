@@ -102,6 +102,23 @@
           "Ref": "LambdaTimeout"
         }
       }
+    },
+    "LambdaInvokeUpdater": {
+      "Type": "Custom::LambdaUpdaterInvoke",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${LambdaName}"
+        },
+        "FunctionName": {
+          "Ref": "LambdaName"
+        },
+        "FunctionZipFileUrl": {
+          "Fn::Sub": "https://s3.amazonaws.com/${LambdaS3Bucket}/${LambdaName}.zip"
+        }
+      },
+      "DependsOn": [
+        "LambdaFunction"
+      ]
     }
   },
   "Parameters": {
