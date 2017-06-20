@@ -8,6 +8,7 @@ after_success:
 - mkdir dist
 - find ./ -name '*.pyc' -delete
 - zip -r dist/aws-cfn-lambda-updater.zip . -x '.git/*' -x 'dist/*'
+- cp deploy/cloudformation.json dist/aws-cfn-lambda-updater.json
 - ls -al dist
 deploy:
   skip_cleanup: true

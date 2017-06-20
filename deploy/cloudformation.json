@@ -1,0 +1,160 @@
+
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Update Lambda functions when called by CloudFormation",
+  "Resources": {
+    "LambdaIamRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Fn::Sub": "Lambda-${LambdaName}"
+        },
+        "Path": "/service-role/",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+      }
+    },
+    "LambdaIamPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "LambdaExecutionPolicy",
+        "Roles": [
+          {
+            "Ref": "LambdaIamRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "logs:CreateLogGroup",
+              "Resource": {
+                "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${LambdaName}:*"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "lambda:UpdateFunctionCode"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${UpdatableLambdaFunctions}"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "LambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "LambdaS3Bucket"
+          },
+          "S3Key": {
+            "Fn::Sub": "${LambdaName}.zip"
+          }
+        },
+        "Description": "Lambda Updater for CloudFormation.",
+        "FunctionName": {
+          "Ref": "LambdaName"
+        },
+        "Handler": {
+          "Ref": "LambdaHandler"
+        },
+        "MemorySize": {
+          "Ref": "LambdaMemorySize"
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaIamRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.6",
+        "Timeout": {
+          "Ref": "LambdaTimeout"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "LambdaName": {
+      "Type": "String",
+      "Description": "Name of Lambda function",
+      "Default": "aws-cfn-lambda-updater"
+    },
+    "LambdaHandler": {
+      "Type": "String",
+      "Description": "Lambda handler function name",
+      "Default": "aws-cfn-lambda-updater.handler"
+    },
+    "LambdaMemorySize": {
+      "Type": "String",
+      "Description": "Lambda memory size",
+      "Default": "192"
+    },
+    "LambdaTimeout": {
+      "Type": "String",
+      "Description": "Lambda timeout",
+      "Default": "60"
+    },
+    "LambdaS3Bucket": {
+      "Type": "String",
+      "Description": "S3 bucket containing Lambda code.",
+      "Default": "straycat-dhs-org-straycat-lambda-deploys"
+    },
+    "UpdatableLambdaFunctions": {
+      "Type": "String",
+      "Description": "Functions that this can update.",
+      "Default": "*"
+    }
+  },
+  "Outputs": {
+    "LambdaFunctionArn": {
+      "Description": "Lambda Function ARN.",
+      "Value": {
+        "Fn::GetAtt": ["LambdaFunction", "Arn"]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-LambdaFunctionArn"
+        }
+      }
+    },
+    "LambdaCodeSha256": {
+      "Description": "Lambda code SHA256.",
+      "Value": ""
+    },
+    "TravisBuildNumber": {
+      "Description": "Travis build number.",
+      "Value": "0"
+    }
+  }
+}
