@@ -58,6 +58,7 @@
             {
               "Effect": "Allow",
               "Action": [
+                "lambda:GetFunction",
                 "lambda:UpdateFunctionCode"
               ],
               "Resource": [
@@ -118,17 +119,6 @@
       },
       "DependsOn": [
         "LambdaFunction"
-      ]
-    },
-    "LambdaVersion": {
-      "Type": "AWS::Lambda::Version",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "LambdaFunction"
-        }
-      },
-      "DependsOn": [
-        "LambdaInvokeUpdater"
       ]
     }
   },
