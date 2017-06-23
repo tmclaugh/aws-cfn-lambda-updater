@@ -80,14 +80,8 @@ def update_lambda(event, context):
     lambda_update_resp = lambda_client.update_function_code(**lambda_update_kwargs)
     _logger.debug('lambda_update_resp: {}'.format(lambda_update_resp))
 
-    # Error check
-    # The CodeSha256 is optional in the event.
-    if function_code_sha256:
-        lambda_function = lambda_client.get_function(FunctionName=function_name)
-        _logger.debug('lambda_function: {}'.format(lambda_function))
-        function_code256_new = lambda_function.get('CodeSha256')
-        if function_code_sha256_new != function_code_sha256:
-            raise  Exception('Unexpected CodeSha256: {} != {}'.format(function_code_sha256_new, function_code_sha256))
+    # NOTE: We don't error check here because update rollbacks would fail
+    # since we don't have the ability to roll a function back.
 
     # Construct our CFN response. cfn_resource will handle setting RequestId.
     # ref: http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-responses.html

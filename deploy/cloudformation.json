@@ -58,7 +58,6 @@
             {
               "Effect": "Allow",
               "Action": [
-                "lambda:GetFunction",
                 "lambda:UpdateFunctionCode"
               ],
               "Resource": [
