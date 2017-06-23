@@ -13,6 +13,13 @@ after_success:
 - python -c "import json, sys; cfn=json.load(sys.stdin); cfn['Resources']['LambdaInvokeUpdater']['Properties']['TravisBuildNumber'] = ${TRAVIS_BUILD_NUMBER}; json.dump(cfn, sys.stdout, indent=2)" < dist/aws-cfn-lambda-updater.json > dist/aws-cfn-lambda-updater.json.new; mv dist/aws-cfn-lambda-updater.json{.new,}
 - python -c "import json, sys; cfn=json.load(sys.stdin); cfn['Outputs']['LambdaCodeSha256']['Value'] = '$(openssl dgst -binary -sha256 dist/aws-cfn-lambda-updater.zip | openssl base64)'; json.dump(cfn, sys.stdout, indent=2)" < dist/aws-cfn-lambda-updater.json > dist/aws-cfn-lambda-updater.json.new; mv dist/aws-cfn-lambda-updater.json{.new,}
 - python -c "import json, sys; cfn=json.load(sys.stdin); cfn['Outputs']['TravisBuildNumber']['Value'] = ${TRAVIS_BUILD_NUMBER}; json.dump(cfn, sys.stdout, indent=2)" < dist/aws-cfn-lambda-updater.json > dist/aws-cfn-lambda-updater.json.new; mv dist/aws-cfn-lambda-updater.json{.new,}
+# These are for the example service
+- zip -r dist/aws-cfn-lambda-updater-example-lambda.zip . -x '.git/*' -x 'dist/*'
+- cp deploy/cloudformation-example-lambda.json dist/aws-cfn-lambda-updater-example-lambda.json
+- python -c "import json, sys; cfn=json.load(sys.stdin); cfn['Resources']['LambdaInvokeUpdater']['Properties']['CodeSha256'] = '$(openssl dgst -binary -sha256 dist/aws-cfn-lambda-updater.zip | openssl base64)'; json.dump(cfn, sys.stdout, indent=2)" < dist/aws-cfn-lambda-updater-example-lambda.json > dist/aws-cfn-lambda-updater-example-lambda.json.new; mv dist/aws-cfn-lambda-updater-example-lambda.json{.new,}
+- python -c "import json, sys; cfn=json.load(sys.stdin); cfn['Resources']['LambdaInvokeUpdater']['Properties']['TravisBuildNumber'] = ${TRAVIS_BUILD_NUMBER}; json.dump(cfn, sys.stdout, indent=2)" < dist/aws-cfn-lambda-updater-example-lambda.json > dist/aws-cfn-lambda-updater-example-lambda.json.new; mv dist/aws-cfn-lambda-updater-example-lambda.json{.new,}
+- python -c "import json, sys; cfn=json.load(sys.stdin); cfn['Outputs']['LambdaCodeSha256']['Value'] = '$(openssl dgst -binary -sha256 dist/aws-cfn-lambda-updater.zip | openssl base64)'; json.dump(cfn, sys.stdout, indent=2)" < dist/aws-cfn-lambda-updater-example-lambda.json > dist/aws-cfn-lambda-updater-example-lambda.json.new; mv dist/aws-cfn-lambda-updater-example-lambda.json{.new,}
+- python -c "import json, sys; cfn=json.load(sys.stdin); cfn['Outputs']['TravisBuildNumber']['Value'] = ${TRAVIS_BUILD_NUMBER}; json.dump(cfn, sys.stdout, indent=2)" < dist/aws-cfn-lambda-updater-example-lambda.json > dist/aws-cfn-lambda-updater-example-lambda.json.new; mv dist/aws-cfn-lambda-updater-example-lambda.json{.new,}
 - ls -al dist
 deploy:
   skip_cleanup: true
